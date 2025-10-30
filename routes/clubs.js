@@ -57,7 +57,7 @@ router.patch('/:id', async (req, res) => {
     try {
         const club = await Club.findByPk(req.params.id);
         if (!club) {
-            return res.status(404).json({ message: 'Club not found' })
+            return res.json({ message: 'Club not found' })
         };
 
         club.title = title;
