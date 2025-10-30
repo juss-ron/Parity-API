@@ -19,4 +19,4 @@ const Club = sequelize.define('Club', {
     }
 });
 
-model.exports = Club
+module.exports = Club

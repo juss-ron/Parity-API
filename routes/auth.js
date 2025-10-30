@@ -45,10 +45,10 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Wrong username or password'});
         };
 
-        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '60d'});
-        return res.json({ message: 'Login Successful', token })
+        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1d'});
+        res.json({ message: 'Login Successful', token })
     } catch (err) {
-        return res.status(500).json({ error: err.mesage })
+        res.status(500).json({ error: err.mesage })
     }
 });
 

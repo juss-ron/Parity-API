@@ -1,0 +1,7 @@
+PATCH http://localhost:3000/clubs/86543b4b-04a1-48c3-bc7f-05fff69a8939
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZmODE0M2MyLWY2ODAtNDkyZS1iMGE4LWJiNjU0NDJlMGEzOCIsInVzZXJuYW1lIjoidGVzdFVzZXIiLCJpYXQiOjE3NjE4NTcwMDYsImV4cCI6MTc2MTk0MzQwNn0._XAxwgbm-7MSpWOdTYP43VBGDTsTNo7sZc6bkv4nmQU
+
+{
+    "title": "MCRI"
+}

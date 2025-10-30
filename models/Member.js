@@ -19,28 +19,28 @@ const Member = sequelize.define('Member', {
     },
 
     investment: {
-        type: DataTypes.Int,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     interestAcrued: {
-        type: DataTypes.Int,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     totalInvestment: {
-        type: DataTypes.Int,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 
     owing: {
-        type: DataTypes.Int,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     interestOwing: {
-        type: DataTypes.Int,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     totalOwing: {
-        type: DataTypes.Int,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 });
@@ -74,4 +74,4 @@ Member.prototype.loan = async function (amount) {
     await this.save()
 };
 
-model.exports = Member
+module.exports = Member
