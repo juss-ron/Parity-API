@@ -20,27 +20,33 @@ const Member = sequelize.define('Member', {
 
     investment: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
     interestAcrued: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
     totalInvestment: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
 
     owing: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
     interestOwing: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
     totalOwing: {
         type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
 });
