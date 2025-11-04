@@ -1,0 +1,107 @@
+const express = require('express');
+const { Member, User, Transaction } = require('../models/Relationships');
+const auth = require('../middleware/authMiddleware');
+const clubAuth = require('../middleware/clubMiddleware');
+const router = express.Router();
+
+router.use(auth);
+router.use(clubAuth)
+
+router.get('/', async (req, res) => {
+    try {
+        const members = await Member.findAll({
+            where: {
+                clubId: req.club.id
+            }
+        });
+        res.json(members)
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: err.message })
+    }
+});
+
+router.post('/', async (req, res) => {
+    const { username } = req.body;
+    
+    try {
+        const user = await User.findOne({  where: {  username } });
+        if (!user) {
+            res.status(404).json({ message: 'User not found' })
+        };
+
+        const member = await Member.create({
+            userId: req.user.id,
+            clubId: req.club.id,
+            username: username
+        });
+        res.status(200).json({ message: "Member added successfully" })
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message })
+    }
+});
+
+router.patch('/:id', async (req, res) => {
+    const { investAmount, interestAmount, payLoanAmount, loanAmount } = req.body;
+    const noValues = (!investAmount && !interestAmount && !payLoanAmount && !loanAmount);
+    const valuesAtZero = (investAmount < 1 && interestAmount < 1  && payLoanAmount < 1  && loanAmount < 1 );
+
+    if (noValues ) {
+        res.status(404).json({ message: 'At least one amount must be greater than zero'})
+    }
+
+    try {
+        const member = await Member.findByPk(req.params.id);
+        if (!member) {
+            return res.status(404).json({ message: 'Member not found' })
+        };
+
+        if (investAmount > 0) {
+            await member.invest(investAmount)
+        };
+        if (interestAmount > 0) {
+            await member.payInterest(investAmount)
+        };
+        if (payLoanAmount > 0) {
+            await member.payLoan(payLoanAmount)
+        };
+        if (loanAmount > 0) {
+            await member.loan(payLoanAmount)
+        };
+
+        await Transaction.create({
+            memberId: member.id,
+            clubId: req.club.id,
+            interestAmount,
+            interestAmount,
+            payLoanAmount,
+            loanAmount
+        });
+
+        res.status(200).json({ message: 'Transaction complete'})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message })
+    }
+}); 
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const member = await Member.findByPk(req.params.id);
+        if (!member) {
+            res.status(404).json({ message: 'Member not found' })
+        };
+
+        const transactions = await Transaction.findAll({ where: { memberId: req.params.id } });
+
+        await member.destroy();
+        res.json({ message: 'Member deleted successfully' })
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message })
+    }
+});
+
+module.exports = router
