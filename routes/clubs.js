@@ -41,6 +41,7 @@ router.post('/', async (req, res) => {
             userId: req.user.id,
             title
         });
+        
         res.status(201).json({ message: 'Club created successfully'})
     } catch (err) {
         console.log(err);
