@@ -2,13 +2,14 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { Op } = require('sequelize')
 
 const router = express.Router();
 const SECRET_KEY = 'MukandoManagerKey';
 
 //Create user
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({error: 'Username and password are required'})
     };
@@ -20,10 +21,13 @@ router.post('/register', async (req, res) => {
         };
 
         const hashed = await bcrypt.hash(password, 10);
-        const user = await User.create({ username, password: hashed });
-        res.status(201).json({message: 'Successfully created account'})
+        const user = await User.create({ username, email, password: hashed });
+
+        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1d'});
+        res.status(201).json({ message: 'Successfully created account', token })
     } catch (err) {
-        res.json({error: err.message})
+        res.status(500).json({error: err.message});
+        console.log(err)
     }
 });
 
@@ -35,7 +39,12 @@ router.post('/login', async (req, res) => {
     };
 
     try {
-        const user = await User.findOne({ where: { username } });
+        const user = await User.findOne({ where: { 
+            [Op.or]: [
+                { username },
+                { email: username }
+            ]
+        } });
         if (!user) {
             return res.status(400).json({ error: 'Wrong username or password'});
         };
