@@ -61,6 +61,10 @@ router.patch('/:id', async (req, res) => {
             return res.json({ message: 'Club not found' })
         };
 
+        if (club.userId !== req.user.id) {
+            return res.json({ message: 'Not authorized to change name' })
+        }
+
         club.title = title;
         await club.save();
         res.status(200).json({ message: 'Club renamed successfully' })
@@ -71,12 +75,16 @@ router.patch('/:id', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-    const club = await Club.findByPk(req.params.id);
-    if (!club) {
-        return res.status(404).json({ message: 'Club not found' })
-    };
-
     try {
+        const club = await Club.findByPk(req.params.id);
+        if (!club) {
+            return res.status(404).json({ message: 'Club not found' })
+        };
+
+        if (club.userId !== req.user.id) {
+            return res.json({ message: 'Not authorized to delete' })
+        }
+
         const members = await Member.findAll({
             where: {
                 clubId: req.params.id
