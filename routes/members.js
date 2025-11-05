@@ -3,6 +3,7 @@ const { Member, User, Transaction } = require('../models/Relationships');
 const auth = require('../middleware/authMiddleware');
 const clubAuth = require('../middleware/clubMiddleware');
 const router = express.Router();
+const { Op } = require('sequelize');
 
 router.use(auth);
 router.use(clubAuth)
@@ -21,17 +22,48 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    try {
+        const member = await Member.findOne({
+            where: {
+                [Op.and]: [
+                    { clubId: req.club.id },
+                    { id: req.params.id }
+                ]
+            }
+        });
+
+        if (!member) {
+            return res.status(404).json({ message: 'Member not found' })
+        };
+
+        res.json(member)
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: err.message })
+    }
+});
+
 router.post('/', async (req, res) => {
     const { username } = req.body;
-    
+    if (!username) {
+        return res.status(404).json({ message: 'Username is required' })
+    }
+
+    if (req.user.id !== req.club.userId) {
+        return res.status(401).json({ message: 'You cannot add members to this club' })
+    }
+
     try {
         const user = await User.findOne({  where: {  username } });
         if (!user) {
-            res.status(404).json({ message: 'User not found' })
+            return res.status(404).json({ message: 'User not found' })
         };
 
         const member = await Member.create({
-            userId: req.user.id,
+            userId: user.id,
+            username: user.username,
+            email: user.email,
             clubId: req.club.id,
             username: username
         });
@@ -48,7 +80,11 @@ router.patch('/:id', async (req, res) => {
     const valuesAtZero = (investAmount < 1 && interestAmount < 1  && payLoanAmount < 1  && loanAmount < 1 );
 
     if (noValues ) {
-        res.status(404).json({ message: 'At least one amount must be greater than zero'})
+        return res.status(404).json({ message: 'At least one amount must be greater than zero'})
+    }
+
+    if (req.user.id !== req.club.userId) {
+        return res.status(401).json({ message: 'You cannot record transactions in this club' })
     }
 
     try {
@@ -61,13 +97,13 @@ router.patch('/:id', async (req, res) => {
             await member.invest(investAmount)
         };
         if (interestAmount > 0) {
-            await member.payInterest(investAmount)
+            await member.payInterest(interestAmount)
         };
         if (payLoanAmount > 0) {
             await member.payLoan(payLoanAmount)
         };
         if (loanAmount > 0) {
-            await member.loan(payLoanAmount)
+            await member.loan(loanAmount)
         };
 
         await Transaction.create({
@@ -87,6 +123,10 @@ router.patch('/:id', async (req, res) => {
 }); 
 
 router.delete('/:id', async (req, res) => {
+    if (req.user.id !== req.club.userId) {
+        return res.status(401).json({ message: 'You cannot add members to this club' })
+    }
+
     try {
         const member = await Member.findByPk(req.params.id);
         if (!member) {
