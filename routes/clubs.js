@@ -8,22 +8,48 @@ router.use(auth);
 
 router.get('/', async (req, res) => {
     try {
+        const memberships = await Member.findAll({
+            where: { userId: req.user.id },
+            attributes: ['clubId']
+        });
+
+        const clubIds = memberships.map(m => m.clubId)
+
         const clubs = await Club.findAll({
             where: {
                 [Op.or]: [
                     { userId: req.user.id },
-                    { '$members.userId$': req.user.id }
+                    { id: clubIds }
                 ]
             },
             include: [
                 {
                     model: Member,
-                    as: "members",
+                    as: 'members',
                     required: false
                 }
             ]
         });
-        res.json(clubs)
+
+        const enriched = clubs.map(club => {
+            const members = club.members || [];
+            const totalInvestment = members.reduce((sum, m) => sum + m.investment, 0);
+            const totalInterest = members.reduce((sum, m) => sum + m.interestAcrued, 0);
+            const owed = members.reduce((sum, m) => sum + m.owing, 0);
+            const totalOwed = members.reduce((sum, m) => sum + m.totalOwing, 0);
+
+            return {
+                ...club.toJSON(),
+                totalMembers: members.length,
+                totalInvestment,
+                totalInterest,
+                owed,
+                totalOwed,
+                inHand: totalInvestment + totalInterest - owed
+            };
+        });
+
+        res.json(enriched);
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message })
@@ -75,12 +101,12 @@ router.patch('/:id', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-    try {
-        const club = await Club.findByPk(req.params.id);
-        if (!club) {
-            return res.status(404).json({ message: 'Club not found' })
-        };
+    const club = await Club.findByPk(req.params.id);
+    if (!club) {
+        return res.status(404).json({ message: 'Club not found' })
+    };
 
+    try {
         if (club.userId !== req.user.id) {
             return res.json({ message: 'Not authorized to delete' })
         }
@@ -97,7 +123,7 @@ router.delete('/:id', async (req, res) => {
         };
 
         await club.destroy();
-        res.status(204).json({ message: 'Club deleted successfully' })
+        res.status(200).json({ message: 'Deleted club successfully' })
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message })
