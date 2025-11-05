@@ -13,6 +13,14 @@ const Member = sequelize.define('Member', {
         type: DataTypes.UUID,
         allowNull: false
     },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+     email: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     clubId: {
         type: DataTypes.UUID,
         allowNull: false
@@ -53,6 +61,7 @@ const Member = sequelize.define('Member', {
 
 Member.prototype.invest = async function (amount) {
     this.investment += amount;
+    this.totalInvestment += amount;
     await this.save()
 };
 
@@ -60,23 +69,30 @@ Member.prototype.payInterest = async function (amount) {
     if (amount <= 0) {
         res.json({ error: 'Amount must be greater than zero' })
     };
+    
     if ( amount < this.interestOwing ) {
-        this.interestOwing -= amount
+        this.interestOwing -= amount;
+        this.totalOwing -= amount
     } else {
+        this.totalOwing -= this.interestOwing;
         this.interestOwing = 0
     };
-    interestAcrued += amount;
+
+    this.interestAcrued += amount;
+    this.totalInvestment += amount;
     await this.save()
 };
 
 Member.prototype.payLoan = async function (amount) {
     this.owing -= amount;
+    this.totalOwing -= amount
     await this.save()
 };
 
 Member.prototype.loan = async function (amount) {
     this.owing += amount;
     this.interestOwing += (amount / 10);
+    this.totalOwing += (amount + (amount / 10))
     await this.save()
 };
 
