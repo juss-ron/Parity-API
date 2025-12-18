@@ -5,10 +5,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mobile",
+    "money",
+    "managing",
+    "expenses"
+  ],
+  "author": "Ron Harifiyati",
   "license": "ISC",
-  "description": "",
+  "description": "Digital platform for managing informal savings groups (mukando/round) with member verification, contribution tracking, mobile money integration, and automated loan calculations.",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
