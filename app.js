@@ -8,6 +8,10 @@ const memberRoutes = require('./routes/members');
 const app = express();
 app.use(express.json());
 
+// .env
+require('dotenv').config();
+console.log("hello" + process.env.SECRET_KEY)
+
 // Routes
 app.use('/auth', authRoutes);
 app.use('/clubs', clubRoutes);
