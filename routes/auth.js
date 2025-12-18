@@ -5,7 +5,7 @@ const User = require('../models/User');
 const { Op } = require('sequelize')
 
 const router = express.Router();
-const SECRET_KEY = 'MukandoManagerKey';
+const SECRET_KEY = process.env.SECRET_KEY;
 
 //Register user
 router.post('/register', async (req, res) => {
@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Username is already taken' })
         };
 
-        const hashed = await bcrypt.hash(password, 10);
+        const hashed = await bcrypt.hash(password, process.env.BCRYPT_SALT);
         const user = await User.create({ username, email, password: hashed });
 
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1d' });
