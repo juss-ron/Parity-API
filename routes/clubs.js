@@ -57,6 +57,47 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get one club
+router.get('/:id', async (req, res) => {
+    try {
+        // 1. You must "include" the members to access them later
+        const club = await Club.findByPk(req.params.id, {
+            include: ['members'] // Ensure 'members' matches your association alias
+        });
+
+        if (!club) {
+            return res.status(404).json({ message: 'Club not found' });
+        }
+
+        // 2. Process the single object (no .map needed)
+        const members = club.members || [];
+
+        // Single-pass reduction for better performance
+        const totals = members.reduce((acc, m) => {
+            acc.investment += (m.investment || 0);
+            acc.interest += (m.interestAcrued || 0);
+            acc.owing += (m.owing || 0);
+            acc.totalOwing += (m.totalOwing || 0);
+            return acc;
+        }, { investment: 0, interest: 0, owing: 0, totalOwing: 0 });
+
+        const enriched = {
+            ...club.toJSON(),
+            totalMembers: members.length,
+            totalInvestment: totals.investment,
+            totalInterest: totals.interest,
+            owed: totals.owing,
+            totalOwed: totals.totalOwing,
+            inHand: totals.investment + totals.interest - totals.owing
+        };
+
+        res.json(enriched);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Create a new club
 router.post('/', async (req, res) => {
     const { title } = req.body;

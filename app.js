@@ -10,7 +10,8 @@ app.use(express.json());
 
 // .env
 require('dotenv').config();
-console.log("hello" + process.env.SECRET_KEY)
+console.log("hello" + process.env.SECRET_KEY);
+console.log("hello" + process.env.BCRYPT_SALT);
 
 // Routes
 app.use('/auth', authRoutes);

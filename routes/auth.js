@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -20,7 +21,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Username is already taken' })
         };
 
-        const hashed = await bcrypt.hash(password, process.env.BCRYPT_SALT);
+        const hashed = await bcrypt.hash(password, 10);
         const user = await User.create({ username, email, password: hashed });
 
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1d' });
