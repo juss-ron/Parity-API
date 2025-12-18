@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.use(auth);
 
+// Get all clubs
 router.get('/', async (req, res) => {
     try {
         const memberships = await Member.findAll({
@@ -56,6 +57,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Create a new club
 router.post('/', async (req, res) => {
     const { title } = req.body;
     if (!title) {
@@ -67,14 +69,15 @@ router.post('/', async (req, res) => {
             userId: req.user.id,
             title
         });
-        
-        res.status(201).json({ message: 'Club created successfully'})
+
+        res.status(201).json({ message: 'Club created successfully' })
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message })
     }
 });
 
+// Edit a club
 router.patch('/:id', async (req, res) => {
     const { title } = req.body;
     if (!title) {
@@ -100,6 +103,7 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
+// Delete a club
 router.delete('/:id', async (req, res) => {
     const club = await Club.findByPk(req.params.id);
     if (!club) {

@@ -8,6 +8,7 @@ const { Op } = require('sequelize');
 router.use(auth);
 router.use(clubAuth)
 
+// Get all members in a club
 router.get('/', async (req, res) => {
     try {
         const members = await Member.findAll({
@@ -22,6 +23,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get a specific member's information
 router.get('/:id', async (req, res) => {
     try {
         const member = await Member.findOne({
@@ -44,6 +46,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Add a member to a club
 router.post('/', async (req, res) => {
     const { username } = req.body;
     if (!username) {
@@ -55,7 +58,7 @@ router.post('/', async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({  where: {  username } });
+        const user = await User.findOne({ where: { username } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' })
         };
@@ -74,13 +77,14 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Edit a member's information
 router.patch('/:id', async (req, res) => {
     const { investAmount, interestAmount, payLoanAmount, loanAmount } = req.body;
     const noValues = (!investAmount && !interestAmount && !payLoanAmount && !loanAmount);
-    const valuesAtZero = (investAmount < 1 && interestAmount < 1  && payLoanAmount < 1  && loanAmount < 1 );
+    const valuesAtZero = (investAmount < 1 && interestAmount < 1 && payLoanAmount < 1 && loanAmount < 1);
 
-    if (noValues ) {
-        return res.status(404).json({ message: 'At least one amount must be greater than zero'})
+    if (noValues) {
+        return res.status(404).json({ message: 'At least one amount must be greater than zero' })
     }
 
     if (req.user.id !== req.club.userId) {
@@ -115,13 +119,14 @@ router.patch('/:id', async (req, res) => {
             loanAmount
         });
 
-        res.status(200).json({ message: 'Transaction complete'})
+        res.status(200).json({ message: 'Transaction complete' })
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message })
     }
-}); 
+});
 
+// Delete a member from a club
 router.delete('/:id', async (req, res) => {
     if (req.user.id !== req.club.userId) {
         return res.status(401).json({ message: 'You cannot add members to this club' })
